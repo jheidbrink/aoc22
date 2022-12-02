@@ -16,29 +16,34 @@ def readfile(filename: str) -> str:
     with open(filename, encoding='utf8') as fh:
         return fh.read()
 
-def parse_character(character: str) -> Hand:
-    assert character in "ABCXYZ"
+def parse_hand(character: str) -> Hand:
+    assert character in ("A", "B", "C")
     return {"A": Hand.ROCK, "B": Hand.PAPER, "C": Hand.SCISSORS, "X": Hand.ROCK, "Y": Hand.PAPER, "Z": Hand.SCISSORS}[character]
 
-def parse_line(line: str) -> tuple[Hand, Hand]:
-    opponent_hand, my_hand = (parse_character(c) for c in line.split(' '))
-    return (opponent_hand, my_hand)
+def parse_result(character: str) -> GameResult:
+    assert character in ("X", "Y", "Z")
+    return {"X": GameResult.LOSE, "Y": GameResult.DRAW, "Z": GameResult.WIN}[character]
 
-def parse_input(contents: str) -> list[tuple[Hand, Hand]]:
+def parse_line(line: str) -> tuple[Hand, GameResult]:
+    encoded_hand, encoded_result = line.split(' ')
+    return (parse_hand(encoded_hand), parse_result(encoded_result))
+
+def parse_input(contents: str) -> list[tuple[Hand, GameResult]]:
     return [parse_line(line) for line in contents.splitlines()]
 
-def play(opponent_hand, player_hand) -> GameResult:
-    if opponent_hand == player_hand:
-        return GameResult.DRAW
-    if (opponent_hand, player_hand) in [(Hand.ROCK, Hand.PAPER), (Hand.PAPER, Hand.SCISSORS), (Hand.SCISSORS, Hand.ROCK)]:
-        return GameResult.WIN
-    return GameResult.LOSE
+def player_hand(opponent_hand: Hand, result: GameResult) -> Hand:
+    if result == GameResult.DRAW:
+        return opponent_hand
+    if result == GameResult.WIN:
+        return Hand((opponent_hand.value + 1) % 3)
+    return Hand((opponent_hand.value + 2) % 3)
 
-def score(opponent_hand, player_hand) -> int:
-    return {GameResult.WIN: 6, GameResult.DRAW: 3, GameResult.LOSE: 0}[play(opponent_hand, player_hand)] + {Hand.ROCK: 1, Hand.PAPER: 2, Hand.SCISSORS: 3}[player_hand]
+def score(opponent_hand: Hand, result: GameResult) -> int:
+    p_hand = player_hand(opponent_hand, result)
+    return {GameResult.WIN: 6, GameResult.DRAW: 3, GameResult.LOSE: 0}[result] + {Hand.ROCK: 1, Hand.PAPER: 2, Hand.SCISSORS: 3}[p_hand]
 
 def main():
-    games: list[tuple[Hand, Hand]] = parse_input(readfile('day2_input'))
+    games: list[tuple[Hand, GameResult]] = parse_input(readfile('day2_input'))
     result = sum([score(game[0], game[1]) for game in games])
     print(result)
 
