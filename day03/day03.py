@@ -25,6 +25,21 @@ def common_item(line: str) -> str:
     assert len(intersection) == 1
     return next(iter(intersection))
 
+def chunks_of_three(lines: list):
+    for i in range(0, len(lines), 3):
+        yield lines[i:i+3]
+
+def sum_of_group_badge_priorities(input_lines: list[str]) -> int:
+    return sum([priority(badge(group)) for group in chunks_of_three(input_lines)])
+
+def badge(group: list[str]) -> str:
+    assert len(group) == 3
+    intersection = set(group[0]).intersection(set(group[1])).intersection(set(group[2]))
+    assert len(intersection) == 1
+    badge = next(iter(intersection))
+    assert len(badge) == 1
+    return badge
+
 def priority(item: str) -> int:
     assert len(item) == 1
     if ord('a') <= ord(item) <= ord('z'):
@@ -36,7 +51,8 @@ def priority(item: str) -> int:
 def main():
     input_lines = readfile("day03_input").splitlines()
     data = {
-        'part 1': sum_of_priorities(input_lines)
+        'part 1': sum_of_priorities(input_lines),
+        'part 2': sum_of_group_badge_priorities(input_lines),
     }
     print(data)
 
