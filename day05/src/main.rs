@@ -11,7 +11,7 @@ struct Move {
     to: usize
 }
 
-fn part1(input: String) -> String {
+fn part1(input: &String) -> String {
     let input_parts: Vec<&str> = input.split("\n\n").collect();
     assert!(input_parts.len() == 2);
     let input_start = input_parts[0];
@@ -24,9 +24,34 @@ fn part1(input: String) -> String {
     return stacks.iter().map(|s| s.last().unwrap()).collect()
 }
 
+fn part2(input: &String) -> String {
+    let input_parts: Vec<&str> = input.split("\n\n").collect();
+    assert!(input_parts.len() == 2);
+    let input_start = input_parts[0];
+    let mut stacks = parse_start(input_start);
+    let input_moves = input_parts[1];
+    let moves = parse_moves(input_moves);
+    for m in moves {
+        apply_ultramove(&mut stacks, m)
+    }
+    return stacks.iter().map(|s| s.last().unwrap()).collect()
+}
+
 fn apply_move(configuration: &mut Vec<Vec<char>>, m: Move) {
     for _ in 0..m.amount {
         let c = configuration[m.from - 1].pop().unwrap();
+        configuration[m.to - 1].push(c);
+    }
+}
+
+fn apply_ultramove(configuration: &mut Vec<Vec<char>>, m: Move) {
+    let mut to_move = Vec::new();
+    for _ in 0..m.amount {
+        let c = configuration[m.from - 1].pop().unwrap();
+        to_move.push(c);
+    }
+    to_move.reverse();
+    for c in to_move {
         configuration[m.to - 1].push(c);
     }
 }
@@ -66,7 +91,8 @@ fn parse_move(line: &str) -> Move {
 
 fn main() {
     let input = read_input();
-    println!("Part 1: Top of the Stacks: {}", part1(input));
+    println!("Part 1: Top of the Stacks: {}", part1(&input));
+    println!("Part 1: Top of the Stacks: {}", part2(&input));
 }
 
 mod tests {
@@ -85,7 +111,24 @@ mod tests {
             "move 1 from 1 to 2",
             ];
         let input = input_lines.join("\n");
-        assert_eq!(part1(input), "CMZ")
+        assert_eq!(part1(&input), "CMZ")
+    }
+
+    #[test]
+    fn test_part2() {
+        let input_lines: Vec<&str> = vec![
+            "    [D]    ",
+            "[N] [C]    ",
+            "[Z] [M] [P]",
+            " 1   2   3 ",
+            "",
+            "move 1 from 2 to 1",
+            "move 3 from 1 to 3",
+            "move 2 from 2 to 1",
+            "move 1 from 1 to 2",
+            ];
+        let input = input_lines.join("\n");
+        assert_eq!(part2(&input), "MCD")
     }
 
     #[test]
@@ -126,5 +169,12 @@ mod tests {
         let mut stacks = vec![vec!['A', 'B', 'C'], vec!['D', 'E', 'F'], vec!['G', 'H', 'I']];
         apply_move(&mut stacks, Move { amount: 2, from: 1, to: 2 });
         assert_eq!(stacks, vec![vec!['A'], vec!['D', 'E', 'F', 'C', 'B'], vec!['G', 'H', 'I']]);
+    }
+
+    #[test]
+    fn test_apply_ultramove() {
+        let mut stacks = vec![vec!['A', 'B', 'C'], vec!['D', 'E', 'F'], vec!['G', 'H', 'I']];
+        apply_ultramove(&mut stacks, Move { amount: 2, from: 1, to: 2 });
+        assert_eq!(stacks, vec![vec!['A'], vec!['D', 'E', 'F', 'B', 'C'], vec!['G', 'H', 'I']]);
     }
 }
