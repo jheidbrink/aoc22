@@ -1,6 +1,5 @@
 use std::fs;
 use std::fmt;
-use std::str::Lines;
 use std::cmp::Reverse;
 
 struct SliceDisplay<'a, T: 'a>(&'a [T]);
@@ -30,7 +29,8 @@ fn parse_input(input: String) -> Vec<Vec<i32>> {
     elf_str.map(parse_elf).collect()
 }
 
-fn parse_elf(input: Lines) -> Vec<i32> {
+fn parse_elf<'a>(input: impl Iterator<Item=&'a str>) -> Vec<i32> {
+    // Parse an iterable of strings to a vector of integers
     input.map(|x| x.parse().unwrap()).collect()
 }
 
